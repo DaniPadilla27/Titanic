@@ -257,7 +257,7 @@ body {
     background: rgba(30, 215, 96, 0.1);
 }
 
-.submit-btn {
+.submit-btn, .test-data-btn {
     width: 100%;
     padding: 15px;
     background: linear-gradient(135deg, #1ed760, #1db954);
@@ -271,12 +271,19 @@ body {
     margin-top: 20px;
 }
 
-.submit-btn:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, #1fdf6a, #1ed760);
+.test-data-btn {
+    background: linear-gradient(135deg, #666666, #555555);
 }
 
-.submit-btn:active {
+.submit-btn:hover, .test-data-btn:hover {
+    transform: translateY(-2px);
+}
+
+.test-data-btn:hover {
+    background: linear-gradient(135deg, #777777, #666666);
+}
+
+.submit-btn:active, .test-data-btn:active {
     transform: translateY(0);
 }
 
@@ -444,7 +451,7 @@ body {
 
     .form-container {
         padding: 20px;
-        margin: 20px 10px;
+        margin: 20px;
     }
     
     .form-grid {

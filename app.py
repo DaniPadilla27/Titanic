@@ -8,7 +8,7 @@ import logging
 from datetime import datetime
 import uuid
 
-# Configure logging
+# Configurar logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ try:
     
     # Log categorías aprendidas por el OrdinalEncoder
     logger.debug("Categorías de OrdinalEncoder:")
-    for col, categories in zip(['Sex', 'Embarked', 'Cabin', 'Title', 'Ticket'], ordinal_encoder.categories_):
+    for col, categories in zip(['Sex', 'Title', 'Ticket'], ordinal_encoder.categories_):
         logger.debug(f"{col}: {categories.tolist()}")
     logger.info("Modelos cargados exitosamente")
 except Exception as e:
@@ -61,8 +61,6 @@ def predict():
             'SibSp': request.form.get('sibsp', '0'),
             'Parch': request.form.get('parch', '0'),
             'Fare': request.form.get('fare', '0.0'),
-            'Embarked': request.form.get('embarked', 'S'),
-            'Cabin': request.form.get('cabin', 'Unknown'),
             'Ticket': request.form.get('ticket', 'Unknown'),
             'Name': request.form.get('name', '')
         }
@@ -149,13 +147,13 @@ def predict():
         logger.debug(f"Request ID: {request_id} - Título procesado: {df['Title'].iloc[0]}")
 
         # Validar que el título sea conocido por el encoder
-        known_titles = ['Mr', 'Mrs', 'Miss', 'Master', 'Rare']
+        known_titles = ['Master', 'Miss', 'Mr', 'Mrs', 'Rare']
         if df['Title'].iloc[0] not in known_titles:
             logger.warning(f"Request ID: {request_id} - Título no reconocido: {df['Title'].iloc[0]}")
             return jsonify({'error': f'Título "{df["Title"].iloc[0]}" no reconocido por el modelo. Use títulos como Mr, Mrs, Miss, Master.'}), 400
 
         # Validar variables categóricas contra las categorías del OrdinalEncoder
-        categorical_cols = ['Sex', 'Embarked', 'Cabin', 'Title', 'Ticket']
+        categorical_cols = ['Sex', 'Title', 'Ticket']
         for col, categories in zip(categorical_cols, ordinal_encoder.categories_):
             if df[col].iloc[0] not in categories:
                 if col == 'Ticket':
@@ -176,7 +174,7 @@ def predict():
             return jsonify({'error': f'Error en codificación de variables categóricas: {str(e)}'}), 400
 
         # Seleccionar características para RobustScaler (en el mismo orden que en entrenamiento)
-        scaler_features = ['Pclass', 'Sex', 'Age', 'SibSp', 'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked', 'FamilySize', 'Title']
+        scaler_features = ['Sex', 'Ticket', 'Age', 'Fare', 'Pclass', 'SibSp', 'Title', 'FamilySize']
         X = df[scaler_features]
         logger.debug(f"Request ID: {request_id} - Características seleccionadas para escalado: {X.to_dict()}")
 
@@ -191,15 +189,10 @@ def predict():
             logger.error(traceback.format_exc())
             return jsonify({'error': f'Error en escalado de características: {str(e)}'}), 400
 
-        # Seleccionar características para PCA y predicción (en el mismo orden que en entrenamiento)
-        pca_features = ['Sex', 'Ticket', 'Age', 'Fare', 'Pclass', 'SibSp', 'Title', 'FamilySize']
-        X_pca_input = X_scaled_df[pca_features]
-        logger.debug(f"Request ID: {request_id} - Características seleccionadas para PCA: {X_pca_input.to_dict()}")
-
         # Aplicar PCA
         logger.debug(f"Request ID: {request_id} - Aplicando PCA")
         try:
-            X_pca = pca_model.transform(X_pca_input)
+            X_pca = pca_model.transform(X_scaled_df)
             logger.debug(f"Request ID: {request_id} - PCA aplicado")
         except Exception as e:
             logger.error(f"Request ID: {request_id} - Error en PCA: {str(e)}")
@@ -210,8 +203,7 @@ def predict():
         logger.debug(f"Request ID: {request_id} - Realizando predicción")
         try:
             prediction = random_forest_model.predict(X_pca)[0]
-            prediction_proba = random_forest_model.predict_proba(X_pca)[0][1]
-            logger.debug(f"Request ID: {request_id} - Predicción: {prediction}, Probabilidad: {prediction_proba}")
+            logger.debug(f"Request ID: {request_id} - Predicción: {prediction}")
         except Exception as e:
             logger.error(f"Request ID: {request_id} - Error en predicción: {str(e)}")
             logger.error(traceback.format_exc())
@@ -220,7 +212,6 @@ def predict():
         # Preparar respuesta
         result = {
             'survived': bool(prediction),
-            'probability': round(prediction_proba * 100, 1),
             'passenger_name': data['Name']
         }
         
