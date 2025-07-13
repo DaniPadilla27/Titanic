@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predicción de Supervivencia - Titanic</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+    <div class="bg-decoration">
+        <div class="wave"></div>
+        <div class="floating-elements">
+            <div class="floating-element">⚓</div>
+            <div class="floating-element">🌊</div>
+            <div class="floating-element">⛵</div>
+            <div class="floating-element">🚢</div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">🚢</div>
+                <div class="logo-text">Titanic AI Predictor</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="hero-section">
+            <h1 class="hero-title">Predictor de Supervivencia del Titanic</h1>
+            <p class="hero-subtitle">Utiliza inteligencia artificial para predecir si un pasajero habría sobrevivido al hundimiento del RMS Titanic</p>
+        </section>
+
+        <section id="predictor" class="form-container">
+            <div class="form-header">
+                <h2>Ingresa los datos del pasajero</h2>
+                <p>Completa la información para obtener una predicción precisa</p>
+            </div>
+
+            <form id="titanicForm" method="POST" action="{{ url_for('predict') }}">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="pclass">Clase del Pasajero <span class="required">*</span></label>
+                        <select id="pclass" name="pclass" required>
+                            <option value="">Selecciona una clase</option>
+                            <option value="1">Primera Clase</option>
+                            <option value="2">Segunda Clase</option>
+                            <option value="3">Tercera Clase</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="name">Nombre del Pasajero <span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="Ej: Mr. John Smith" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Sexo <span class="required">*</span></label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="male" name="sex" value="male" required>
+                                <label for="male">Hombre</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="female" name="sex" value="female" required>
+                                <label for="female">Mujer</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="age">Edad <span class="required">*</span></label>
+                        <input type="number" id="age" name="age" placeholder="Ej: 25.5" step="0.1" min="0" max="120" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sibsp">Cónyuge/Hermanos a bordo 
+                            <span class="tooltip" data-tooltip="Número de cónyuges o hermanos que acompañan al pasajero">ℹ️</span>
+                        </label>
+                        <input type="number" id="sibsp" name="sibsp" placeholder="0" min="0" max="10" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="parch">Padres/Hijos a bordo 
+                            <span class="tooltip" data-tooltip="Número de padres o hijos que acompañan al pasajero">ℹ️</span>
+                        </label>
+                        <input type="number" id="parch" name="parch" placeholder="0" min="0" max="10" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ticket">Número de Ticket</label>
+                        <input type="text" id="ticket" name="ticket" placeholder="Ej: A/5 21171">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fare">Tarifa (£)</label>
+                        <input type="number" id="fare" name="fare" placeholder="Ej: 7.25" step="0.01" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cabin">Cabina</label>
+                        <input type="text" id="cabin" name="cabin" placeholder="Ej: C85">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="embarked">Puerto de Embarque</label>
+                        <select id="embarked" name="embarked">
+                            <option value="">Selecciona un puerto</option>
+                            <option value="S">Southampton</option>
+                            <option value="C">Cherbourg</option>
+                            <option value="Q">Queenstown</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">🔮 Predecir Supervivencia</button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Analizando datos...</p>
+            </div>
+
+            <div class="result" id="result"></div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h3>Sobre el Proyecto</h3>
+                    <p>Esta aplicación utiliza técnicas de machine learning para predecir la supervivencia de pasajeros del Titanic basándose en datos históricos y características demográficas.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Características</h3>
+                    <ul class="features-list">
+                        <li>Predicción en tiempo real</li>
+                        <li>Interfaz intuitiva</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Tecnologías</h3>
+                    <div class="tech-stack">
+                        <span class="tech-item">Python</span>
+                        <span class="tech-item">Flask</span>
+                        <span class="tech-item">Scikit-learn</span>
+                        <span class="tech-item">Pandas</span>
+                        <span class="tech-item">NumPy</span>
+                        <span class="tech-item">HTML5</span>
+                        <span class="tech-item">CSS3</span>
+                        <span class="tech-item">JavaScript</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 Titanic AI Predictor. Proyecto educativo de Machine Learning.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
